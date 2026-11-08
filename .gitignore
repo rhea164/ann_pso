@@ -1,0 +1,17 @@
+# Virtual environment (everyone creates their own with: pip install -r requirements.txt)
+venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Editor settings
+.vscode/
+.idea/
+
+# Notebook autosaves
+.ipynb_checkpoints/
