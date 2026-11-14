@@ -12,7 +12,7 @@ from src.activations import get_activation
 class NeuralNetwork:
     """Fully connected feedforward network.
 
-    layer_sizes: nodes per layer including input and output, e.g. [4, 8, 1].
+    layer_sizes: nodes per layer including input, hidden and output, e.g. [4, 8, 1].
     activations: one activation name per non-input layer, e.g. ["tanh", "logistic"].
     """
 
@@ -24,9 +24,7 @@ class NeuralNetwork:
         self.layer_sizes = list(layer_sizes)
         self.set_activations(activations)
 
-        # Start with small random weights and zero biases. PSO will overwrite
-        # these, but this means the network is usable straight away (and lets us
-        # test the evaluation code on random weights, as the spec suggests).
+        # Initialize weights and biases randomly (normal distribution, mean=0, std=0.5).
         rng = np.random.default_rng(seed)
         self.weights = []
         self.biases = []
@@ -58,11 +56,16 @@ class NeuralNetwork:
         # Flatten (samples x 1) to (samples,) so it compares directly with the labels.
         return (output.ravel() >= threshold).astype(int)
 
-    # ---- Flat parameter vector: this is what PSO will optimise ----
+    # ---- Flat parameter vector: what PSO will optimise ----
 
     def num_parameters(self):
         """Total number of weights and biases (= length of a PSO particle)."""
-        return sum(W.size + b.size for W, b in zip(self.weights, self.biases))
+        total = 0
+        for W in self.weights:
+            total += W.size
+        for b in self.biases:
+            total += b.size
+        return total
 
     def get_parameters(self):
         """Flatten all weights and biases into one 1D vector."""

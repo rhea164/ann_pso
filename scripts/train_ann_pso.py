@@ -29,16 +29,20 @@ def main(path):
     fitness = make_fitness(net, X_train, y_train)
 
     # 3. PSO: each particle has one dimension per ANN parameter.
-    pso = PSO(fitness, dimensions=net.num_parameters(), swarmsize=30,
-              max_iterations=100, lower=-2.0, upper=2.0)
+    pso = PSO(fitness, dimensions=net.num_parameters(), swarmsize=5,
+              max_iterations=10, lower=-2.0, upper=2.0)
     best_vector, best_fitness = pso.run()
+    
+    h=pso.history
+    n=len(h)
+    checkpoints = [0, n//2, n-1] #start, middle, end
 
     # 4. Load the best weights found and evaluate on unseen test data.
     net.set_parameters(best_vector)
-    print(f"Parameters: {net.num_parameters()} | evaluations: {30 * 100}")
+    print(f"Parameters: {net.num_parameters()} | evaluations: {pso.swarmsize * pso.max_iterations}")
     print(f"Best train accuracy from PSO: {best_fitness:.3f}")
-    print(f"Fitness after iteration 1 / 50 / 100: "
-          f"{pso.history[0]:.3f} / {pso.history[49]:.3f} / {pso.history[99]:.3f}")
+    print(f"Fitness after iteration { '/'.join(str(i+1) for i in checkpoints)}:"
+          f"{'/'.join(f'{h[i]:.3f}' for i in checkpoints)}")
     for name, Xs, ys in (("train", X_train, y_train), ("test", X_test, y_test)):
         pred = net.predict(Xs)
         p, r, f1 = precision_recall_f1(ys, pred)
