@@ -55,3 +55,16 @@ class Particle:
                                 c*(x_plus[i] - self.position[i])+
                                 d*(x_exclam[i] - self.position[i])
                                 )
+    
+    def apply_boundary_handling(self, lower, upper, method):
+        # EXTENSION (not in Algorithm 39): applies boundary handling. 
+        # If a particle goes outisde the search space, it is either clamped or randomly reset to a new position within the search space.
+        for i in range(len(self.position)):
+            if lower <= self.position[i] <= upper:
+                continue
+            if method == "clamp": # put the position back to the closest boundary
+                self.position[i] = np.clip(self.position[i], lower, upper)
+                self.velocity[i] = 0.0
+            elif method =="random_reset": #put the position to a new random position within search space
+                self.position[i] = np.random.uniform(lower, upper)
+                self.velocity[i] = np.random.uniform(-0.1, 0.1)

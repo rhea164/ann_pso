@@ -14,8 +14,10 @@ class PSO:
                   num_informants=3, #Number of informants per particle (not counting itself)
                   max_iterations=100, #Line 27: until run out of time
                   target_fitness=None, #Line 27: Best is the ideal solution
-                  lower=-1.0,         #tange for random initial positions
-                  upper=1.0):
+                  lower=-1.0,         #range for random initial positions
+                  upper=1.0,
+                  boundary_method="clamp" #method for handling particles that go out of bounds
+                  ):
         self.fitness_function = fitness_function
         self.dimensions = dimensions
         self.swarmsize = swarmsize
@@ -29,6 +31,7 @@ class PSO:
         self.target_fitness = target_fitness
         self.lower = lower
         self.upper = upper
+        self.boundary_method = boundary_method
         
         self.swarm=[]
         self.best_position = None # Line 10 : Best <- Nothing
@@ -53,15 +56,16 @@ class PSO:
             chosen = np.random.choice(others, size=self.num_informants, replace=False) # choosing k random informants from all the other particles
             particle.informants = [particle] + [self.swarm[j] for j in chosen] # the informants of the current particle are : the current particle + the randomly chosen informants from the other particles
     
-    def run(self): 
-        self.initialise_swarm() #Line 7-9: repeat (Line 27: until we have run out of time). initialise the swarm with random particles and set their informants
+    def run(self):  #Line 7-28 : initialising and the main loop
+        self.initialise_swarm() #Line 7-9: initialise the swarm with random particles and set their informants
         
         # setting best position again because init only runs once and run can be called multiple times 
         self.best_position = None # Line 10 : Best <- Nothing
         self.best_fitness = -np.inf 
         self.history =[] 
+        self.escapes = 0
         
-        for iteration in range(self.max_iterations): #Line 11: running the iterations
+        for iteration in range(self.max_iterations): #Line 11: running the iterations. repeat until run out of time (Line 27)
             
             for particle in self.swarm: #Line 12
                 particle.assess_fitness(self.fitness_function) #Line 13: AssessFitness(x)
@@ -76,8 +80,26 @@ class PSO:
                 
             for particle in self.swarm: #Line 25
                 particle.move(self.epsilon) #Line 26: move the particle to its new position
+                if np.any((particle.position < self.lower) | (particle.position > self.upper)):
+                    self.escapes += 1 #count how many times particles escape the search space
+                particle.apply_boundary_handling(self.lower, self.upper, self.boundary_method) #EXTENSION: boundary handling
+                
                 
             if self.target_fitness is not None and self.best_fitness >= self.target_fitness:
                 break #Line 27: until Best is the ideal solution
             
         return self.best_position, self.best_fitness #Line 28: return Best
+
+if __name__== "__main__":
+    # testing boundary handling techniques 
+    def peak_near_wall(x):
+        """A simple fitness function with a peak near the upper boundary."""
+        return -np.sum((x - 4.5)**2)
+    
+    for method in [None, "clamp", "random_reset"]:
+        pso = PSO(peak_near_wall, dimensions=2, max_iterations=100,
+                  lower=-5, upper=5.0, boundary_method=method)
+        best_vector, best_fitness = pso.run()
+        inside = all(np.all((p.position >= pso.lower) & (p.position <= pso.upper)) for p in pso.swarm)
+        print (f"Method: {method} | Best fitness: {best_fitness:} | All particles inside bounds? {inside} | Escapes: {pso.escapes}")
+        
