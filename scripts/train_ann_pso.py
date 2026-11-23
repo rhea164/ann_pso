@@ -1,8 +1,3 @@
-"""Train the ANN with PSO once and report train/test results.
-
-Run from the project root:  python -m scripts.train_ann_pso [path_to_data]
-"""
-
 import sys
 
 import numpy as np

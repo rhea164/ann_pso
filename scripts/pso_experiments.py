@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,6 +9,8 @@ NUM_RUNS = 10
 SWARMSIZE = 30
 MAX_ITERATIONS = 100
 LOWER,UPPER = -5,5
+RESULTS_DIR = "results"  # plots are saved here (kept out of the project root)
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
 from src.ann import NeuralNetwork
 from src.coupling import make_fitness
@@ -47,7 +51,7 @@ def compare_boundary_methods():
     plt.ylabel(f"Best training accuracy (mean of {NUM_RUNS} runs)")
     plt.title("Boundary handling comparison")
     plt.legend()
-    plt.savefig("boundary_comparison.png", dpi=150)
+    plt.savefig(os.path.join(RESULTS_DIR, "boundary_comparison.png"), dpi=150)
     plt.close()
     print("Plot saved to boundary_comparison.png")
 
@@ -95,7 +99,7 @@ def compare_swarm_sizes(budget=600):
     plt.ylabel(f"Best training accuracy (mean of {NUM_RUNS} runs)")
     plt.title(f"Convergence for each swarm size (budget {budget})")
     plt.legend()
-    plt.savefig(f"swarm_size_convergence_{budget}.png", dpi=150)
+    plt.savefig(os.path.join(RESULTS_DIR, f"swarm_size_convergence_{budget}.png"), dpi=150)
     plt.close()
 
     # Final test accuracy against swarm size, with error bars of one std
@@ -105,7 +109,7 @@ def compare_swarm_sizes(budget=600):
     plt.xlabel("Swarm size (iterations = budget / swarm size)")
     plt.ylabel(f"Test accuracy (mean ± std, {NUM_RUNS} runs)")
     plt.title(f"Swarm size vs iterations (budget {budget})")
-    plt.savefig(f"swarm_size_accuracy_{budget}.png", dpi=150)
+    plt.savefig(os.path.join(RESULTS_DIR, f"swarm_size_accuracy_{budget}.png"), dpi=150)
     plt.close()
     print(f"Plots saved to swarm_size_convergence_{budget}.png and swarm_size_accuracy_{budget}.png")
 
@@ -148,7 +152,7 @@ def compare_coefficients(budget=600,swarmsize=20):
     plt.ylabel(f"Best training accuracy (mean of {NUM_RUNS} runs)")
     plt.title(f"Convergence for different coefficients (cognitive / social balance)")
     plt.legend()
-    plt.savefig(f"coefficients_convergence_{budget}.png", dpi=150)
+    plt.savefig(os.path.join(RESULTS_DIR, f"coefficients_convergence_{budget}.png"), dpi=150)
     plt.close()
     
     plt.errorbar(beta_values, means, yerr=stds, marker="o", capsize=4)
@@ -156,7 +160,7 @@ def compare_coefficients(budget=600,swarmsize=20):
     plt.xlabel("Cognitive beta (top) / Social gamma+delta (bottom)")
     plt.ylabel(f"Test accuracy (mean ± std, {NUM_RUNS} runs)")
     plt.title(f"Effect of cognitive/social balance on test accuracy")
-    plt.savefig(f"coefficients_accuracy_{budget}.png", dpi=150, bbox_inches="tight")
+    plt.savefig(os.path.join(RESULTS_DIR, f"coefficients_accuracy_{budget}.png"), dpi=150, bbox_inches="tight")
     plt.close()
 
 if __name__ == "__main__":

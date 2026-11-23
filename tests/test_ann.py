@@ -1,18 +1,18 @@
-"""Sanity checks for the ANN. Run from the project root: python -m tests.test_ann"""
-
 import numpy as np
 
 from src.ann import NeuralNetwork
-from src.activations import logistic, relu, tanh
+from src.activations import logistic, relu, tanh, leaky_relu
 from src.data import stratified_split
 
 
 def test_activations():
-    # Known values: logistic(0) = 0.5, relu clips negatives, tanh is odd.
+    # Known values: logistic(0) = 0.5, relu clips negatives, tanh is odd
     assert logistic(np.array(0.0)) == 0.5
     assert relu(np.array(-3.0)) == 0.0 and relu(np.array(2.0)) == 2.0
     assert tanh(np.array(0.0)) == 0.0
-    # Extreme input must not overflow or give NaN.
+    # Leaky ReLU keeps positives and shrinks negatives by 0.01 instead of zeroing them
+    assert leaky_relu(np.array(2.0)) == 2.0 and np.isclose(leaky_relu(np.array(-2.0)), -0.02)
+    # Extreme input must not overflow or give NaN
     assert np.isfinite(logistic(np.array(-1e4)))
 
 
@@ -30,7 +30,7 @@ def test_output_shape_and_range():
 
 
 def test_parameters_roundtrip():
-    # Setting a vector then reading it back must give the same vector.
+    # Setting a vector then reading it back must give the same vector
     net = NeuralNetwork([4, 5, 1], ["tanh", "logistic"])
     vec = np.random.default_rng(2).normal(size=net.num_parameters())
     net.set_parameters(vec)
@@ -38,7 +38,7 @@ def test_parameters_roundtrip():
 
 
 def test_known_output():
-    # Hand-computed: one layer, 2 inputs, weights [1, 1], bias 0, relu.
+    # Hand-computed: one layer, 2 inputs, weights [1, 1], bias 0, relu
     net = NeuralNetwork([2, 1], ["relu"])
     net.set_parameters([1.0, 1.0, 0.0])
     assert net.forward(np.array([[2.0, 3.0]]))[0, 0] == 5.0
@@ -65,7 +65,7 @@ def test_stratified_split():
 
 
 if __name__ == "__main__":
-    # Tiny runner so pytest is not required.
+    # Tiny runner so pytest is not required
     for name, func in list(globals().items()):
         if name.startswith("test_"):
             func()

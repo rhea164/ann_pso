@@ -1,5 +1,3 @@
-"""Sanity tests for the ANN <-> PSO coupling. Run: python -m tests.test_coupling"""
-
 import numpy as np
 
 from src.ann import NeuralNetwork
@@ -38,6 +36,32 @@ def test_fitness_depends_on_vector():
     rng = np.random.RandomState(2)
     scores = {fit(rng.normal(size=net.num_parameters())) for _ in range(50)}
     assert len(scores) > 1
+
+
+def test_decode_activations_bins():
+    # lower end -> first activation, upper end -> last, middle -> middle one
+    from src.coupling import decode_activations, ACTIVATION_NAMES
+    names = decode_activations([-5.0, 0.0, 5.0, 99.0], -5.0, 5.0)
+    assert names == [ACTIVATION_NAMES[0], ACTIVATION_NAMES[1], ACTIVATION_NAMES[-1], ACTIVATION_NAMES[-1]]
+
+
+def test_vector_with_activations_sets_network():
+    # the extra genes must change the network's hidden activations, output stays logistic
+    from src.coupling import load_vector_with_activations
+    net, X, y = make_toy()
+    vec = np.concatenate([net.get_parameters(), [5.0]])  # one hidden layer, gene at the top of the range
+    load_vector_with_activations(net, vec, -5.0, 5.0)
+    assert net.activation_names == ["tanh", "logistic"]
+    vec[-1] = -5.0
+    load_vector_with_activations(net, vec, -5.0, 5.0)
+    assert net.activation_names == ["logistic", "logistic"]
+
+
+def test_fitness_with_activations_in_range():
+    from src.coupling import make_fitness_with_activations
+    net, X, y = make_toy()
+    vec = np.concatenate([net.get_parameters(), [0.0]])
+    assert 0.0 <= make_fitness_with_activations(net, X, y, -5.0, 5.0)(vec) <= 1.0
 
 
 if __name__ == "__main__":
