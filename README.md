@@ -1,5 +1,11 @@
 # F20BC/F21BC Coursework – ANN trained with PSO
 
+**Group:** UG_10
+
+**Students:**
+- Rhea Menezes, H00456241
+- Huzaifa Abdul Safeem, H00509373
+
 Implemented: ANN, PSO (informants, Algorithm 39), the coupling that trains the ANN with PSO, and the Task 5 experiments. Plots are written to `results/`.
 
 ## Setup
